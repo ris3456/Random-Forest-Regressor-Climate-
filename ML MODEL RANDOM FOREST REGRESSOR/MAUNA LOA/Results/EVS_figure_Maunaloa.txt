@@ -1,0 +1,18 @@
+import pandas as pd
+from matplotlib import pyplot as plt
+
+d1 = pd.read_csv('Final_data_CSV.csv')
+x = range(85)
+
+y = d1['Average Temperature']
+y2 = d1['Average CO2(ppm) ']
+y3= d1['OLR Value']
+plt.plot(x,y2)
+plt.plot(x,y)
+plt.plot(x,y3)
+plt.ylabel('CO2(ppm), OLR(Watts/m^2) , Temperature(Celsius)')
+plt.xlabel('2009 January to 2015 December in months')
+plt.legend(['Temp',"Co2","OLR"])
+plt.title('Data Analysis of Outgoing longer radiation')
+plt.show()
+

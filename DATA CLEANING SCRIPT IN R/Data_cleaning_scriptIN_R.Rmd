@@ -1,0 +1,89 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+library(readr)
+library(dplyr)
+library(tidyr)
+install.packages("devtools")
+require(devtools)
+install_github("Displayr/flipTime")
+library(flipTime)
+library(naniar)
+data_co2<- read_csv('CO2_DATASET - rlutcs_all_2010_2017_rcp8570.0_74.0_20.0_24.0.csv')
+head(data_co2)
+str(data_co2)
+col_names<- data_co2 %>% select(-lat,-lon) %>%
+  colnames()
+col_names
+data_co2<- data_co2 %>% gather(col_names,key='Date',value='co2_conc')
+head(data_co2)
+write.csv(data_co2,'co2_dataset.csv')
+dat<-read_csv('co2_dataset.csv')
+str(dat)
+
+dat<- dat %>% mutate(Date=AsDate(Date))
+dat<- dat %>% mutate(co2_conc=co2_conc*1000000)
+dat<- dat %>% replace_with_na(replace=list(co2_conc=-9.999e+09))
+dat<- dat %>% mutate(co2_conc=if_else(is.na(co2_conc),mean(co2_conc,na.rm=TRUE),co2_conc))
+str(dat)
+head(dat)
+summary(dat)
+dat<- dat %>% select(-X1)
+write.csv(dat,'co2_values.csv')
+
+```
+
+
+```{r}
+data_olr<- read_csv('OLR_DATA_W_m2 - rlutcs_all_2010_2017_rcp8570.0_74.0_20.0_24.0.csv')
+head(data_olr)
+View(data_olr)
+col_names<- data_olr %>% select(-lat,-lon) %>% colnames()
+data_olr<- data_olr %>% gather(col_names,key='Date',value='OLR_w/m2')
+data_olr<- data_olr %>% mutate(Date=AsDate(Date))
+head(data_olr)
+summary(data_olr)
+olr<- dat %>% full_join(data_olr)
+olr
+write.csv(data_olr,"DATA_OLR.csv")
+```
+
+
+```{r}
+dat_olr_a<-read_csv('a.csv')
+dat_olr_b<-read_csv('b.csv')
+dat_olr_c<-read_csv('c.csv')
+dat_olr_d<-read_csv('d.csv')
+dat_olr_e<-read_csv('e.csv')
+dat_olr<- dat_olr_a %>% full_join(dat_olr_b) %>% full_join(dat_olr_c) %>% full_join(dat_olr_d) %>%full_join(dat_olr_e)
+col_names<- dat_olr %>% select(-lat,-lon) %>% colnames()
+dat_olr<- dat_olr %>% gather(col_names,key='Date',value='OLR_w/m2')
+dat_olr<- dat_olr %>% mutate(Date=AsDate(Date))
+head(dat_olr)
+summary(dat_olr)
+write.csv(dat_olr,'DATA_OLR_NEW.csv')
+dat_olr<- read_csv('DATA_OLR_NEW - DATA_OLR_NEW.csv')
+dat_olr<- dat_olr %>% inner_join(dat)
+str(dat_olr)
+write.csv(dat_olr %>% select(-X1),"FINAL.csv")
+```
+
+
+```{r}
+library(ggplot2)
+viz<- ggplot(data=dat,aes(x=Date,y=co2_conc))+geom_line()
+viz
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
